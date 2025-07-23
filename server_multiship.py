@@ -87,7 +87,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # Step environment if we have clients
             if clients:
                 actions = {}
-                for sid, client in clients.items():
+                for sid, client in list(clients.items()):
                     if not env.ships[sid]['done']:
                         ship = env.ships[sid]
                         state = np.array([ship['x'], ship['y'], ship['vx'], ship['vy']], dtype=np.float32)
