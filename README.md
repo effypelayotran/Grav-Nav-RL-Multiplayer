@@ -17,7 +17,9 @@ The goal of this project is to simulate spacecraft orbital control. The simulati
 - **Training**: Learn optimal control strategies with PPO.
 - **Testing**: Evaluate model performance.
 - **Rendering**: Visualize the simulation at various stages.
-- **Rendering Multiship**: Visualize the simulation at various stages.
+- **Rendering Multiship**: Rendering MutipleOrbitalEnvironment both locally and on a live server via server_multiship.py. Guide for setting up and developing the live server is here:  https://docs.google.com/document/d/1xjSoBIB6DazPc7yJHS8tudBpW7BRP2kl27tRpOFXGAk/edit?usp=sharing 
+
+To run the MultipleOrbitalEnvrionment locally, run python3 render_multiship_trained.py. Note that these ships rendered in the multiship environment though are only trained on single body, single ship simulations. They still perform pretty well though.
 
 ---
 
