@@ -1,7 +1,7 @@
 # Grav-Nav-RL-Server
 Brown CPFU Vers. 7.23.25
 
-INCLUDE MULTISHIP ORBITAL ENVRIONMENT.
+FORK OF https://github.com/BrownParticleAstro/Grav-Nav-RL.git BUT INCLUDES MULTISHIP ORBITAL ENVRIONMENT.
 
 ## Orbital Simulation Project 🛰️🚀
 
