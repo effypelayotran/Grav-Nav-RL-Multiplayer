@@ -3,4 +3,6 @@ uvicorn
 websockets
 numpy
 torch
-python-multipart 
+python-multipart
+stable-baselines3
+gym

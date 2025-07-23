@@ -7,6 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from stable_baselines3 import PPO
 from environment import MultiShipOrbitalEnvironment
 
+# Lock to prevent RuntimeError: dictionary changed size during iteration 
+clients_lock = asyncio.Lock()
+
 app = FastAPI()
 
 # Allow CORS for frontend
@@ -85,52 +88,92 @@ async def websocket_endpoint(websocket: WebSocket):
                 break
             
             # Step environment if we have clients
-            if clients:
-                actions = {}
-                for sid, client in list(clients.items()):
-                    if not env.ships[sid]['done']:
-                        ship = env.ships[sid]
+            async with clients_lock:
+                if clients:
+                    actions = {}
+                    for sid, client in list(clients.items()):
+                        ship = env.ships.get(sid)
+                        if ship is None or ship.get('done', False):
+                            actions[sid] = 0.0
+                            continue
                         state = np.array([ship['x'], ship['y'], ship['vx'], ship['vy']], dtype=np.float32)
                         obs = convert_state(state, env, ship)
                         obs_tensor = torch.from_numpy(obs).float().unsqueeze(0)
                         with torch.no_grad():
                             action, _ = client["model"].predict(obs_tensor, deterministic=True)
                         actions[sid] = float(action[0])
-                    else:
-                        actions[sid] = 0.0
+                    env.step(actions)
+
+                    # actions = {}
+                    # for sid, client in list(clients.items()):
+                    #     if not env.ships[sid]['done']:
+                    #         ship = env.ships[sid]
+                    #         state = np.array([ship['x'], ship['y'], ship['vx'], ship['vy']], dtype=np.float32)
+                    #         obs = convert_state(state, env, ship)
+                    #         obs_tensor = torch.from_numpy(obs).float().unsqueeze(0)
+                    #         with torch.no_grad():
+                    #             action, _ = client["model"].predict(obs_tensor, deterministic=True)
+                    #         actions[sid] = float(action[0])
+                    #     else:
+                    #         actions[sid] = 0.0
+           
                 
-                env.step(actions)
-                
-                # Broadcast all ship states to all clients
-                states = env.get_states()
-                for sid, client in clients.items():
-                    try:
-                        await client["ws"].send_json({
-                            "type": "state_update",
-                            "ships": states,
-                            "your_ship_id": sid
-                        })
-                    except (RuntimeError, ConnectionResetError, WebSocketDisconnect):
-                        # Remove disconnected client
+            # Broadcast all ship states to all clients
+            states = env.get_states()
+
+            async with clients_lock:
+                    to_remove = []
+                    for sid, client in list(clients.items()):
+                        try:
+                            await client["ws"].send_json({
+                                "type": "state_update",
+                                "ships": states,
+                                "your_ship_id": sid
+                            })
+                        except Exception as e:
+                            print(f"Error sending to client {sid}: {e}")
+                            to_remove.append(sid)
+
+                    for sid in to_remove:
                         env.remove_ship(sid)
-                        if sid in clients:
-                            del clients[sid]
-                    except Exception as e:
-                        print(f"Error sending to client {sid}: {e}")
-                        # Remove problematic client
-                        env.remove_ship(sid)
-                        if sid in clients:
-                            del clients[sid]
+                        clients.pop(sid, None)
+
+
+                # for sid, client in clients.items():
+                #     try:
+                #         await client["ws"].send_json({
+                #             "type": "state_update",
+                #             "ships": states,
+                #             "your_ship_id": sid
+                #         })
+                #     except (RuntimeError, ConnectionResetError, WebSocketDisconnect):
+                #         # Remove disconnected client
+                #         env.remove_ship(sid)
+                #         if sid in clients:
+                #             del clients[sid]
+                #     except Exception as e:
+                #         print(f"Error sending to client {sid}: {e}")
+                #         # Remove problematic client
+                #         env.remove_ship(sid)
+                #         if sid in clients:
+                #             del clients[sid]
             
             await asyncio.sleep(0.0167)  # 60Hz update rate (for much faster animation)
             
+    # except WebSocketDisconnect:
+    #     # Remove ship and client
+    #     env.remove_ship(ship_id)
+    #     if ship_id in clients:
+    #         del clients[ship_id]
     except WebSocketDisconnect:
-        # Remove ship and client
+        pass
+    finally:
         env.remove_ship(ship_id)
-        if ship_id in clients:
-            del clients[ship_id]
+        async with clients_lock:
+            clients.pop(ship_id, None)
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=5500) 
     
