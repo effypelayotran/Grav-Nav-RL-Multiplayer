@@ -1,6 +1,8 @@
 # Grav-Nav-RL-Server
 Brown CPFU Vers. 7.23.25
 
+INCLUDE MULTISHIP ORBITAL ENVRIONMENT.
+
 ## Orbital Simulation Project 🛰️🚀
 
 Simulate 2D orbital maneuvers using **Reinforcement Learning (PPO)**, featuring dynamic visualizations, and customizable training and testing setups.
@@ -18,7 +20,7 @@ The goal of this project is to simulate spacecraft orbital control. The simulati
 - **Testing**: Evaluate model performance.
 - **Rendering**: Visualize the simulation at various stages.
 - **Rendering Multiship**: To visualize a simulation of multiple ships orbiting around the same center mass, run the MultipleOrbitalEnvrionment locally by running ```python3 render_multiship_trained.py``` in the terminal. Note that these ships rendered in the multiship environment though are only trained on single body, single ship simulations. They still perform pretty well though.
-- **Linode Server Setup Guide!!!** Rendering MutipleOrbitalEnvironment both locally and on a live server via ```server_multiship.py```. Guide for setting up and developing the live server is here:  https://docs.google.com/document/d/1xjSoBIB6DazPc7yJHS8tudBpW7BRP2kl27tRpOFXGAk/edit?usp=sharing
+- **LINODE SERVER SETUP GUIDE** Rendering MutipleOrbitalEnvironment both locally and on a live server via ```server_multiship.py```. Guide for setting up and developing the live server is here:  https://docs.google.com/document/d/1xjSoBIB6DazPc7yJHS8tudBpW7BRP2kl27tRpOFXGAk/edit?usp=sharing
 
 ---
 
