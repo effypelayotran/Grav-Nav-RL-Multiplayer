@@ -168,6 +168,9 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     finally:
+    # finally = When this WebSocket connection handler (websocket_endpoint) ends,
+    # whether due to a normal exit, an exception, or a WebSocket disconnect,
+    # make sure to clean up this ship and remove its client from the global state.
         env.remove_ship(ship_id)
         async with clients_lock:
             clients.pop(ship_id, None)
