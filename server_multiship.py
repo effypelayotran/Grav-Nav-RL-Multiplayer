@@ -9,6 +9,10 @@ from environment import MultiShipOrbitalEnvironment
 
 # Lock to prevent RuntimeError: dictionary changed size during iteration 
 clients_lock = asyncio.Lock()
+# multiple ships can absolutely still have their positions and state updated simultaneously
+# because the environment state (env) and ship data (env.ships) are updated in a single coroutine 
+# (the main WebSocket handler loop per connection), not across all connections.
+#  The Lock is ONLY for adding/removing clients, not for actual env or ships' positions
 
 app = FastAPI()
 
