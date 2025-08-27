@@ -58,52 +58,123 @@ class OrbitalEnvironment:
             - reward: Calculated reward based on the current state and action.
             - done: Boolean indicating whether the simulation is complete.
         """
-        action = np.array([0, action[0]])  # Tangential thrust only
+        # ------- OVERVIEW OF FUNCTION (since it is slightly complicated)
+        # We need to find the acceleration, and apply that acceleration to tells us what the position vector [x, y] and
+        # velocity vector [vx, vy] of the next 'state' will be.
+        # The accleration of the ship that will determine the this next 'state' is a combination of all the forces in the scene.
+        # F = ma. If you think about it simply, there is force applied by the gravitational pull of the center mass, and the force applied by the craft's engine.
+        # so a_total = a_gravity + a_craft. We will compute a_total, and use v_f = v_0 + at and x_f = x_0 + (v_x0 t) + (0.5 a_x0 t) to get the updated state's velocity + position.
 
+
+        # A quick note on precise definition of thrust for non-mech-e students like myself: 
+        # Thrust is a mechanical force that moves the aircraft through the air. 
+        # It is generated most often through the reaction of accelerating a mass of gas. 
+        # The engine does work on the gas and as the gas is accelerated to the rear, the engine is accelerated in the opposite direction. 
+
+
+        # ----- TODO: Compute a_total = a_gravity + a_craft. 
+        # Apply a_total using Runge-Kuta 4 Midpoints Integrator Formula to compute the next self.x, self.y, self.vx,  self.vy.
+        # ----- 1. Compute a_gravity (acceleration due to gravitty of central mass) ----
         def acceleration(state):
-            """Helper function to compute the gravitational acceleration."""
+            """
+            Helper function to compute the gravitational acceleration. Returns acceleration pulling craft IN toward center mass.
+
+            The acceleration is given by Newton's law of gravitation:
+                a = -GM / r^2 * r̂
+            where r̂ is the radial unit vector from the origin to the spacecraft.
+            The result always points radially inward toward the central mass.
+        
+            Args:
+                state (numpy.ndarray): Current state of the system as an array 
+                    [x, y, vx, vy]. Only x and y are used here.
+        
+            Returns:
+                numpy.ndarray: A 2D vector [ax, ay] representing gravitational
+                acceleration in Cartesian coordinates (x, y).
+            """
+            # Extract x and y position
             x, y = state[:2]
+
+            # Distance from central mass (origin)
             dist = np.sqrt(x**2 + y**2)
+
+            # Prevent division-by-zero (clip very small or very large distances)
             dist = np.clip(dist, 1e-5, 5.0)
+
+            # Radial unit vector pointing outward
             rhat = np.array([x, y]) / dist
+
+            # Inward gravitational acceleration vector
             return -self.GM / (dist**2) * rhat
 
-        # Current state and RK4 position update
+        # ----- 2. Package the current state vector -----
+        # State format: [x, y, vx, vy]
         state = np.array([self.x, self.y, self.vx, self.vy])
 
-        # Calculate the RK4 update steps
-        k1_v = self.dt * acceleration(state)
-        k1_p = self.dt * np.array([self.vx, self.vy])
-
+        # ----- 3. RK4 integration steps -----
+        # k1: acceleration and velocity slope at the beginning of the interval
+        k1_v = self.dt * acceleration(state)             # acceleration * dt
+        k1_p = self.dt * np.array([self.vx, self.vy])    # velocity * dt
+        
+        # k2: slope at midpoint using k1
         state_mid = state + 0.5 * np.concatenate([k1_p, k1_v])
-        k2_v = self.dt * acceleration(state_mid)
-        k2_p = self.dt * np.array([self.vx + 0.5 * k1_v[0], self.vy + 0.5 * k1_v[1]])
-
+        k2_v = self.dt * acceleration(state_mid)         # acceleration at midpoint
+        k2_p = self.dt * np.array([self.vx + 0.5 * k1_v[0],
+                                   self.vy + 0.5 * k1_v[1]])
+        
+        # k3: slope at midpoint using k2
         state_mid = state + 0.5 * np.concatenate([k2_p, k2_v])
-        k3_v = self.dt * acceleration(state_mid)
-        k3_p = self.dt * np.array([self.vx + 0.5 * k2_v[0], self.vy + 0.5 * k2_v[1]])
-
+        k3_v = self.dt * acceleration(state_mid)         # acceleration at midpoint
+        k3_p = self.dt * np.array([self.vx + 0.5 * k2_v[0],
+                                   self.vy + 0.5 * k2_v[1]])
+        
+        # k4: slope at end of interval using k3
         state_end = state + np.concatenate([k3_p, k3_v])
-        k4_v = self.dt * acceleration(state_end)
-        k4_p = self.dt * np.array([self.vx + k3_v[0], self.vy + k3_v[1]])
+        k4_v = self.dt * acceleration(state_end)         # acceleration at end
+        k4_p = self.dt * np.array([self.vx + k3_v[0],
+                                   self.vy + k3_v[1]])
 
-        # Update velocity and position using RK4 weighted sum
-        self.vx += (k1_v[0] + 2 * k2_v[0] + 2 * k3_v[0] + k4_v[0]) / 6
-        self.vy += (k1_v[1] + 2 * k2_v[1] + 2 * k3_v[1] + k4_v[1]) / 6
-        self.x += (k1_p[0] + 2 * k2_p[0] + 2 * k3_p[0] + k4_p[0]) / 6
-        self.y += (k1_p[1] + 2 * k2_p[1] + 2 * k3_p[1] + k4_p[1]) / 6
+        # ----- 4. Combine RK4 results into weighted average to 
+        # get new x,y,vx,vy after applying a_gravity -----
+        # RK4 uses a weighted sum: (k1 + 2*k2 + 2*k3 + k4) / 6
+        # This gives a more accurate update than Euler's method.
+        self.vx += (k1_v[0] + 2*k2_v[0] + 2*k3_v[0] + k4_v[0]) / 6
+        self.vy += (k1_v[1] + 2*k2_v[1] + 2*k3_v[1] + k4_v[1]) / 6
+        self.x  += (k1_p[0] + 2*k2_p[0] + 2*k3_p[0] + k4_p[0]) / 6
+        self.y  += (k1_p[1] + 2*k2_p[1] + 2*k3_p[1] + k4_p[1]) / 6
 
-        # Apply the tangential thrust to the velocity
+        # ----- 5. Compute a_craft (acceleration due to craft's thrust)
+        action = np.array([0, action[0]])  # Tangential thrust only. Action is defined in local (radial, tangential). 
+
+        # ----- 6. Rotate action's thrust vector from local (origin is the craft) into global (origin is central mass)coordinates -----
+        # Radial distance (vector ponting from central mass ---> to craft)
         dist = np.sqrt(self.x**2 + self.y**2)
-        dist = max(dist, 1e-5)  # Avoid division by zero
+        dist = max(dist, 1e-5)  
+
+        # Radial unit vector
         rhat = np.array([self.x, self.y]) / dist
+
+        # Build the rotation matrix not from a fixed θ but from the current position of the spacecraft:
+        # First column = radial vector (0, 1)
+        # Second column = tangential vector (-1, 0)
         rotation_matrix = np.array([[rhat[0], -rhat[1]], [rhat[1], rhat[0]]])
+
+        # Project the local thrust (action) onto the global x,y coordinates using the rotation matrix
         thrust = rotation_matrix @ action
+        # thrust = [action_x_global, action_y_global]
+
+        # ----- 6. Computer v_f = v_0 + a(t)
         self.vx += thrust[0] * self.dt
         self.vy += thrust[1] * self.dt
+        # ----- 7. No need to updae self.x and self.y here because 
+        # RK4 already advanced positions x,y forward in time, using the old velocity. 
+        # Thrust alters velocity after this integration step, so the effect on position 
+        # will show up during the next call to step().
 
-        # Update state and calculate reward
+        # Update state
         state = np.array([self.x, self.y, self.vx, self.vy])
+
+        # Update reward
         reward = self.reward_function(action[1])
 
         # Check if the episode is done
@@ -120,12 +191,22 @@ class OrbitalEnvironment:
         Returns:
             Reward value (float).
         """
+        # Current orbit radius is distance of craft from origin
         r = np.sqrt(self.x**2 + self.y**2)
+        # Target orbit is radius = 1.0. r_err is how far off we are from this ideal orbit.
         r_err = r - 1.0
+
+        # abs(self.init_r - 1) is your initial error from the target orbit.
         r_max_err = max(abs(self.init_r - 1), 1e-2)
+        # scale the error relative to init error, and then bound it to be between -2 and 2
         scaled_r_err = np.clip((r_err / r_max_err) * 2, -2, 2)
 
+        #  Reward is highest (≈1.0) when scaled_r_err = 0 (perfect orbit). 
+        # It decreases smoothly as error grows, shaped like a Gaussian curve exp(-x^2).
         reward = np.exp(-scaled_r_err**2)
+
+        # Reward is reduced if the agent fires its thrusters strongly.
+        # Small actions (close to 0) give penalty ≈ 1, large actions shrink it toward 0.
         action_penalty = np.exp(-action**2)
         return reward * action_penalty
 
@@ -318,6 +399,7 @@ class MultiShipOrbitalEnvironment:
         # Each ship has its own state, similar to OrbitalEnvironment
         if r0 is None:
             r0 = np.random.uniform(0.2, 4.0)
+            
         x = r0
         y = 0.0
         vx = 0.0
@@ -349,6 +431,7 @@ class MultiShipOrbitalEnvironment:
             rhat = np.array([x, y]) / dist
             # Central mass gravity
             acc = -self.GM / (dist**2) * rhat
+            
             # Add gravity from other ships
             for other_id, (ox, oy) in positions.items():
                 if other_id == ship_id:
@@ -359,6 +442,7 @@ class MultiShipOrbitalEnvironment:
                     continue  # skip self or near-collisions
                 o_rhat = np.array([dx, dy]) / odist
                 acc += -self.GM / (odist**2) * o_rhat * 0.1  # scale down ship-ship gravity
+            
             # RK4 integration (simplified: only central mass + other ships)
             # k1
             k1_v = self.dt * acc
