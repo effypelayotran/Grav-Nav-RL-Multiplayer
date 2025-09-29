@@ -1,13 +1,6 @@
 # Grav-Nav-RL-Multiplayer
 Brown CPFU Vers. 8.28.25
-
-Fork of https://github.com/BrownParticleAstro/Grav-Nav-RL.git but includes multiship orbital environment & multiplayer game using authoritative server-client setup.
-
-## Orbital Simulation Project 🛰️🚀
-
-Simulate 2D orbital maneuvers using **Reinforcement Learning (PPO)**, featuring dynamic visualizations, and customizable training and testing setups.
-
-**Test your PPO ship model in a multi-ship orbital simulations**, to see if your ship _is the last one standing._
+A Fork of https://github.com/BrownParticleAstro/Grav-Nav-RL.git but includes multiship orbital environment & multiplayer game using authoritative server-client setup.
 
 ## 🎮 How To Run Multiplayer Game Locally
 
@@ -155,6 +148,13 @@ Simulate 2D orbital maneuvers using **Reinforcement Learning (PPO)**, featuring 
 4. Client renders ship positions and handles user input
 
 ---
+
+## Orbital Simulation Project 🛰️🚀
+
+Simulate 2D orbital maneuvers using **Reinforcement Learning (PPO)**, featuring dynamic visualizations, and customizable training and testing setups.
+
+**Test your PPO ship model in a multi-ship orbital simulations**, to see if your ship _is the last one standing._
+
 
 ## 🌟 Overview
 
