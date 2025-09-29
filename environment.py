@@ -277,6 +277,7 @@ class OrbitalEnvWrapper(gym.Env):
             # Eccentric anomaly approximation
             E = M  # For small eccentricities
             # True anomaly
+        
             theta = 2 * np.arctan2(np.sqrt(1 + e_transfer) * np.sin(E / 2),
                                 np.sqrt(1 - e_transfer) * np.cos(E / 2))
             # Expected radius
@@ -388,14 +389,14 @@ class MultiShipOrbitalEnvironment:
     Manages multiple ships in a shared orbital environment, where each ship can be controlled independently
     and all ships interact gravitationally.
     """
-    def __init__(self, GM=1.0, dt=0.01, max_steps=5000):
+    def __init__(self, GM=1.0, dt=0.01, max_steps=None):  # Changed max_steps to None by default
         self.GM = GM
         self.dt = dt
-        self.max_steps = max_steps
+        self.max_steps = max_steps  # None means no step limit
         self.ships = {}  # ship_id: state dict
         self.current_step = 0
 
-    def add_ship(self, ship_id, r0=None, v0=1.0):
+    def add_ship(self, ship_id, r0=None, v0=1.0, control_type='ai'):
         # Each ship has its own state, similar to OrbitalEnvironment
         if r0 is None:
             r0 = np.random.uniform(0.2, 4.0)
@@ -405,79 +406,145 @@ class MultiShipOrbitalEnvironment:
         vx = 0.0
         vy = np.sqrt(self.GM / r0)
         self.ships[ship_id] = {
-            'x': x, 'y': y, 'vx': vx, 'vy': vy, 'init_r': r0, 'done': False
+            'x': x, 'y': y, 'vx': vx, 'vy': vy, 'init_r': r0, 'done': False,
+            'control_type': control_type,  # 'ai' or 'manual'
+            'heading': 0.0,  # Current heading angle (radians from the x-axis) keep adding turn_rate radians to this
+            'thrust': 0.0,   # Current thrust magnitude
+            'turn_rate': 0.0, # Current turn rate
+            'steps': 0  # Track individual ship steps
         }
 
     def remove_ship(self, ship_id):
         if ship_id in self.ships:
             del self.ships[ship_id]
+    
+    def reset(self):
+        self.ships.clear()
+        self.current_step = 0
 
     def step(self, actions):
         """
-        actions: dict of {ship_id: action (float)}
+        actions: dict of {ship_id: action}
+        For AI ships: action is float (tangential thrust)
+        For manual ships: action is dict {'turn': float, 'thrust': float}
         Steps all ships forward, applying their actions and mutual gravity.
         """
         # Gather all positions for mutual gravity
         positions = {sid: (s['x'], s['y']) for sid, s in self.ships.items() if not s['done']}
+        
         for ship_id, ship in self.ships.items():
             if ship['done']:
                 continue
-            action = actions.get(ship_id, 0.0)
-            # Compute total gravitational acceleration from central mass and other ships
-            x, y = ship['x'], ship['y']
-            vx, vy = ship['vx'], ship['vy']
-            dist = np.sqrt(x**2 + y**2)
-            dist = np.clip(dist, 1e-5, 5.0)
-            rhat = np.array([x, y]) / dist
-            # Central mass gravity
-            acc = -self.GM / (dist**2) * rhat
+                
+            # Increment ship's step counter
+            ship['steps'] += 1
+                
+            # Handle different control types
+            if ship['control_type'] == 'ai':
+                # AI control: tangential thrust only
+                action = actions.get(ship_id, 0.0)
+                self._apply_ai_control(ship, action)
+
+            elif ship['control_type'] == 'manual':
+                # Manual control: direction and thrust
+                action = actions.get(ship_id, {'turn': 0.0, 'thrust': 0.0})
+                self._apply_manual_control(ship, action)
             
-            # Add gravity from other ships
-            for other_id, (ox, oy) in positions.items():
-                if other_id == ship_id:
-                    continue
-                dx, dy = ox - x, oy - y
-                odist = np.sqrt(dx**2 + dy**2)
-                if odist < 1e-3:
-                    continue  # skip self or near-collisions
-                o_rhat = np.array([dx, dy]) / odist
-                acc += -self.GM / (odist**2) * o_rhat * 0.1  # scale down ship-ship gravity
+            # Apply physics (gravity + thrust)
+            self._apply_physics(ship, positions)
             
-            # RK4 integration (simplified: only central mass + other ships)
-            # k1
-            k1_v = self.dt * acc
-            k1_p = self.dt * np.array([vx, vy])
-            # k2
-            k2_v = self.dt * acc  # For simplicity, use same acc (could recompute at midpoint)
-            k2_p = self.dt * np.array([vx + 0.5 * k1_v[0], vy + 0.5 * k1_v[1]])
-            # k3
-            k3_v = self.dt * acc
-            k3_p = self.dt * np.array([vx + 0.5 * k2_v[0], vy + 0.5 * k2_v[1]])
-            # k4
-            k4_v = self.dt * acc
-            k4_p = self.dt * np.array([vx + k3_v[0], vy + k3_v[1]])
-            # Update velocity and position
-            vx += (k1_v[0] + 2 * k2_v[0] + 2 * k3_v[0] + k4_v[0]) / 6
-            vy += (k1_v[1] + 2 * k2_v[1] + 2 * k3_v[1] + k4_v[1]) / 6
-            x += (k1_p[0] + 2 * k2_p[0] + 2 * k3_p[0] + k4_p[0]) / 6
-            y += (k1_p[1] + 2 * k2_p[1] + 2 * k3_p[1] + k4_p[1]) / 6
-            # Apply tangential thrust
-            dist = np.sqrt(x**2 + y**2)
-            dist = max(dist, 1e-5)
-            rhat = np.array([x, y]) / dist
-            rotation_matrix = np.array([[rhat[0], -rhat[1]], [rhat[1], rhat[0]]])
-            thrust = rotation_matrix @ np.array([0, action])
-            vx += thrust[0] * self.dt
-            vy += thrust[1] * self.dt
-            # Update state
-            ship['x'], ship['y'], ship['vx'], ship['vy'] = x, y, vx, vy
-            # Check done
-            if dist > 5.0 or dist < 0.1 or self.current_step >= self.max_steps:
+            # Check if ship is done - only based on bounds, not step limit
+            dist = np.sqrt(ship['x']**2 + ship['y']**2)
+            if dist > 5.0 or dist < 0.1:  # Removed max_steps check
                 ship['done'] = True
+                
         self.current_step += 1
+
+    def _apply_ai_control(self, ship, action):
+        """Apply AI control (tangential thrust only)"""
+        # Store the tangential thrust for physics step
+        ship['tangential_thrust'] = action
+
+    def _apply_manual_control(self, ship, action):
+        """Apply manual control (direction and thrust)"""
+        # Update heading based on turn rate
+        ship['turn_rate'] = action.get('turn', 0.0)
+        ship['heading'] += ship['turn_rate'] * self.dt
+        
+        # Update thrust
+        ship['thrust'] = action.get('thrust', 0.0)
+        
+        # Ensure heading is properly initialized if not present
+        if 'heading' not in ship:
+            ship['heading'] = 0.0
+
+    def _apply_physics(self, ship, positions):
+        """Apply physics to a ship (gravity + thrust)"""
+        x, y = ship['x'], ship['y']
+        vx, vy = ship['vx'], ship['vy']
+        
+        # Compute gravitational acceleration from central mass
+        dist = np.sqrt(x**2 + y**2)
+        dist = np.clip(dist, 1e-5, 5.0)
+        rhat = np.array([x, y]) / dist
+        acc = -self.GM / (dist**2) * rhat
+        
+        # Add gravity from other ships
+        for other_id, (ox, oy) in positions.items():
+            if other_id == ship['id'] if hasattr(ship, 'id') else False:
+                continue
+            dx, dy = ox - x, oy - y
+            # distance between ships
+            odist = np.sqrt(dx**2 + dy**2)
+            if odist < 1e-3:
+                continue  # skip self or near-collisions
+
+            # unit vector pointing from ship to other ship
+            o_rhat = np.array([dx, dy]) / odist
+            # gravity formula: F = G * m1 * m2 / r^2
+            acc += -self.GM / (odist**2) * o_rhat * 0.1  # scale down ship-ship gravity
+        
+        # Apply thrust based on control type
+        if ship['control_type'] == 'ai':
+            # AI: tangential thrust
+            if 'tangential_thrust' in ship:
+                # Apply tangential thrust
+                rotation_matrix = np.array([[rhat[0], -rhat[1]], [rhat[1], rhat[0]]])
+                thrust = rotation_matrix @ np.array([0, ship['tangential_thrust']])
+                acc += thrust
+        
+        elif ship['control_type'] == 'manual':
+            # Manual: thrust in current heading direction
+            if ship['thrust'] > 0:
+                thrust_direction = np.array([np.cos(ship['heading']), np.sin(ship['heading'])])
+                thrust = thrust_direction * ship['thrust']
+                acc += thrust
+        
+        # RK4 integration
+        # k1
+        k1_v = self.dt * acc
+        k1_p = self.dt * np.array([vx, vy])
+        # k2
+        k2_v = self.dt * acc  # For simplicity, use same acc
+        k2_p = self.dt * np.array([vx + 0.5 * k1_v[0], vy + 0.5 * k1_v[1]])
+        # k3
+        k3_v = self.dt * acc
+        k3_p = self.dt * np.array([vx + 0.5 * k2_v[0], vy + 0.5 * k2_v[1]])
+        # k4
+        k4_v = self.dt * acc
+        k4_p = self.dt * np.array([vx + k3_v[0], vy + k3_v[1]])
+        
+        # Update velocity and position
+        vx += (k1_v[0] + 2 * k2_v[0] + 2 * k3_v[0] + k4_v[0]) / 6
+        vy += (k1_v[1] + 2 * k2_v[1] + 2 * k3_v[1] + k4_v[1]) / 6
+        x += (k1_p[0] + 2 * k2_p[0] + 2 * k3_p[0] + k4_p[0]) / 6
+        y += (k1_p[1] + 2 * k2_p[1] + 2 * k3_p[1] + k4_p[1]) / 6
+        
+        # Update ship state
+        ship['x'], ship['y'], ship['vx'], ship['vy'] = x, y, vx, vy
 
     def get_states(self):
         """
-        Returns a dict of {ship_id: {'x':..., 'y':..., 'vx':..., 'vy':..., 'done':...}}
+        Returns a dict of {ship_id: {'x':..., 'y':..., 'vx':..., 'vy':..., 'done':..., 'heading':..., 'thrust':...}}
         """
         return {sid: dict(s) for sid, s in self.ships.items()}
