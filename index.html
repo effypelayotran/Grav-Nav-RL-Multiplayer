@@ -4,9 +4,17 @@
 <head>
     <title>Multi-Ship Orbital Simulation</title>
     <style>
+        @font-face {
+            font-family: 'Hyperspace';
+            src: url('fonts/Hyperspace.otf') format('opentype');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Hyperspace', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
             overflow: hidden;
         }
@@ -16,16 +24,15 @@
             top: 20px;
             left: 20px;
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(14, 219, 255, 0.476);
             backdrop-filter: blur(10px);
             padding: 20px;
-            border-radius: 12px;
             z-index: 100;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 2px dotted rgba(255, 255, 255, 0.2);
         }
 
         #info h3 {
+            font-family: 'Hyperspace', sans-serif;
             margin: 0 0 15px 0;
             font-size: 18px;
             font-weight: 600;
@@ -40,7 +47,7 @@
         }
 
         .info-label {
-            color: #8892b0;
+            color: #fdfdfd;
         }
 
         .info-value {
@@ -56,6 +63,337 @@
         .disconnected {
             color: #ff6b6b !important;
         }
+
+        #joinPanel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #ffffff;
+            background: rgba(14, 219, 255, 0.476);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            z-index: 100;
+            border: 2px dotted rgba(255, 255, 255, 0.2);
+        }
+
+        #joinPanel h4 {
+            font-family: 'Hyperspace', sans-serif;
+            margin: 0 0 15px 0;
+            color: #64ffda;
+            font-size: 16px;
+        }
+
+        .joinButton {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            font-family: 'Hyperspace', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .joinButton:hover {
+            background: rgba(100, 255, 218, 0.2);
+            border-color: #64ffda;
+            transform: translateY(-1px);
+        }
+
+        .joinButton:active {
+            transform: translateY(0);
+        }
+
+        #modelUpload {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #ffffff;
+            background: rgba(14, 219, 255, 0.476);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            z-index: 100;
+            border: 2px dotted rgba(255, 255, 255, 0.2);
+            display: none;
+            max-width: 300px;
+        }
+
+        #modelUpload h4 {
+            font-family: 'Hyperspace', sans-serif;
+            margin: 0 0 15px 0;
+            color: #64ffda;
+        }
+
+        .fileInput {
+            display: none;
+        }
+
+        .fileInputLabel {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            font-family: 'Hyperspace', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .fileInputLabel:hover {
+            background: rgba(100, 255, 218, 0.2);
+            border-color: #64ffda;
+        }
+
+        .uploadStatus {
+            margin-top: 10px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .uploadSuccess {
+            color: #64ffda;
+        }
+
+        .uploadError {
+            color: #ff6b6b;
+        }
+
+        .modelStats {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .modelStats h5 {
+            margin: 0 0 8px 0;
+            color: #64ffda;
+            font-size: 12px;
+        }
+
+        .statRow {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 10px;
+        }
+
+        .statLabel {
+            color: #cccccc;
+        }
+
+        .statValue {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #ffffff;
+            background: rgba(14, 219, 255, 0.476);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            z-index: 100;
+            border: 2px dotted rgba(255, 255, 255, 0.2);
+            display: none;
+            max-width: 400px;
+        }
+
+        #controls h4 {
+            font-family: 'Hyperspace', sans-serif;
+            margin: 0 0 15px 0;
+            color: #64ffda;
+        }
+
+        .control-key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 5px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .manualStats {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .manualStats h5 {
+            margin: 0 0 8px 0;
+            color: #64ffda;
+            font-size: 12px;
+        }
+
+        .manualStats .statRow {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .manualStats .statLabel {
+            color: #cccccc;
+            flex-shrink: 0;
+        }
+
+        .manualStats .statValue {
+            color: #ffffff;
+            font-weight: 500;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        #deathPopup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 30px;
+            z-index: 1000;
+            text-align: center;
+            display: none;
+            min-width: 300px;
+        }
+
+        #deathPopup h3 {
+            color: #ff6b6b;
+            font-family: 'Hyperspace', sans-serif;
+            margin: 0 0 20px 0;
+            font-size: 24px;
+        }
+
+        .deathStats {
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .deathStats .statRow {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .deathStats .statLabel {
+            color: #cccccc;
+        }
+
+        .deathStats .statValue {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .deathButton {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-family: 'Hyperspace', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .deathButton:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        #leaderboard {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #ffffff;
+            background: rgba(14, 219, 255, 0.476);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            z-index: 100;
+            border: 2px dotted rgba(255, 255, 255, 0.2);
+            min-width: 250px;
+        }
+
+        #leaderboard h3 {
+            font-family: 'Hyperspace', sans-serif;
+            margin: 0 0 15px 0;
+            color: #64ffda;
+            font-size: 16px;
+        }
+
+        .leaderboardEntry {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 12px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .leaderboardEntry:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboardRank {
+            color: #64ffda;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .leaderboardName {
+            color: #ffffff;
+            flex-grow: 1;
+        }
+
+        .leaderboardSteps {
+            color: #cccccc;
+            font-weight: 500;
+        }
+
+        .leaderboardDead {
+            opacity: 0.5;
+        }
+
+        #baselineAction {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            margin-top: 450px;
+            /* Position below leaderboard */
+            color: #ffffff;
+            background: rgba(14, 219, 255, 0.476);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            z-index: 100;
+            border: 2px dotted rgba(255, 255, 255, 0.2);
+            min-width: 250px;
+        }
+
+        #baselineAction h3 {
+            font-family: 'Hyperspace', sans-serif;
+            margin: 0 0 15px 0;
+            color: #64ffda;
+            font-size: 16px;
+        }
     </style>
 </head>
 
@@ -67,6 +405,10 @@
             <span id="status" class="info-value">Connecting...</span>
         </div>
         <div class="info-row">
+            <span class="info-label">Mode:</span>
+            <span id="mode" class="info-value">Observing</span>
+        </div>
+        <div class="info-row">
             <span class="info-label">Your Ship:</span>
             <span id="shipId" class="info-value">-</span>
         </div>
@@ -76,70 +418,535 @@
         </div>
     </div>
 
+    <div id="joinPanel">
+        <h4>Join</h4>
+        <button class="joinButton" onclick="joinMode('manual')">
+            Manual Control
+        </button>
+        <button class="joinButton" onclick="showModelUpload()">
+            RL Model Control
+        </button>
+    </div>
+
+    <div id="modelUpload">
+        <h4>Upload RL Model</h4>
+        <input type="file" id="modelFile" class="fileInput" accept=".zip" onchange="handleModelUpload(event)">
+        <label for="modelFile" class="fileInputLabel">
+            Choose .zip Model File
+        </label>
+        <div id="uploadStatus" class="uploadStatus"></div>
+        <div id="modelStats" class="modelStats" style="display: none;">
+            <h5>Model Stats</h5>
+            <div class="statRow">
+                <span class="statLabel">Initial Radius:</span>
+                <span class="statValue" id="modelInitRadius">-</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">State (x,y,vx,vy):</span>
+                <span class="statValue" id="modelState">(-, -, -, -)</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">Tangential Thrust:</span>
+                <span class="statValue" id="modelAction">-</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">Current Step:</span>
+                <span class="statValue" id="modelStep">0</span>
+            </div>
+        </div>
+        <button class="joinButton" onclick="cancelModelAction()" style="margin-top: 10px;" id="modelCancelButton">
+            Cancel
+        </button>
+    </div>
+
+    <div id="controls">
+        <h4>Manual Controls</h4>
+        <div>
+            <span class="control-key">←</span> Turn left<br>
+            <span class="control-key">→</span> Turn right<br>
+            <span class="control-key">↑</span> Apply thrust<br>
+        </div>
+        <div id="manualStats" class="manualStats">
+            <h5>Ship Stats</h5>
+            <div class="statRow">
+                <span class="statLabel">Initial Radius:</span>
+                <span class="statValue" id="manualInitRadius">-</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">State (x, y, vx, vy):</span>
+                <span class="statValue" id="manualState">(-, -, -, -)</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">Current Step:</span>
+                <span class="statValue" id="manualStep">0</span>
+            </div>
+        </div>
+        <button class="joinButton" onclick="cancelManualControl()" style="margin-top: 15px;">
+            Cancel
+        </button>
+    </div>
+
+    <div id="deathPopup">
+        <h3>YOU DIED</h3>
+        <div class="deathStats">
+            <div class="statRow">
+                <span class="statLabel">Survival Time:</span>
+                <span class="statValue" id="deathTime">0 steps</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">Final Position:</span>
+                <span class="statValue" id="deathPosition">(0, 0)</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">Final Velocity:</span>
+                <span class="statValue" id="deathVelocity">(0, 0)</span>
+            </div>
+            <div class="statRow">
+                <span class="statLabel">Distance from Center:</span>
+                <span class="statValue" id="deathDistance">0</span>
+            </div>
+        </div>
+        <button class="deathButton" onclick="closeDeathPopup()">
+            Return to Join
+        </button>
+    </div>
+
+    <div id="leaderboard">
+        <h3>Leaderboard</h3>
+        <div id="leaderboardEntries">
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">1.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">2.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">3.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">4.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">5.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">6.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">7.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">8.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">9.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+            <div class="leaderboardEntry">
+                <span class="leaderboardRank">10.</span>
+                <span class="leaderboardName">-</span>
+                <span class="leaderboardSteps">-</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="baselineAction">
+        <h3>Baseline AI Action</h3>
+        <div class="info-row">
+            <span class="info-label">Tangential Thrust:</span>
+            <span id="baselineActionValue" class="info-value">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Velocity (vx, vy):</span>
+            <span id="baselineVelocity" class="info-value">(-, -)</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Distance from Center:</span>
+            <span id="baselineDistance" class="info-value">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Step:</span>
+            <span id="baselineStep" class="info-value">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Initial Radius:</span>
+            <span id="baselineInitRadius" class="info-value">-</span>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Scene setup
+        //---------------------------------- SCENE SETUP ----------------------------------
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a0a0a);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: false }); // Disable antialiasing for performance
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
         // Central mass (star) - solid yellow ball
-        const starGeometry = new THREE.SphereGeometry(0.4, 16, 16); // Reduced segments for performance
+        const starGeometry = new THREE.SphereGeometry(0.4, 16, 16);
         const starMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffd700 // Solid yellow
+            color: 0xffd700
         });
         const star = new THREE.Mesh(starGeometry, starMaterial);
         scene.add(star);
-
-   
 
         // Ship objects - solid colors
         const ships = {};
         const shipColors = [0x64ffda, 0xff6b6b, 0x4ecdc4, 0x45b7d1, 0x96ceb4, 0xfeca57];
         let shipColorIndex = 0;
         let lastTrailUpdate = 0;
-        const trailUpdateInterval = 100; // Update trails every 100ms for performance
+        const trailUpdateInterval = 700;
+
+        //---------------------------------- TICK-BASED NETWORKING ----------------------------------
+        let currentTick = 0;  // Track the current tick from server
+        let lastReceivedTick = 0;  // Last tick we received from server
+        let pendingAction = null;  // Store action until server requests it
+        let waitingForActionRequest = false;  // Whether we're waiting for action request
+
+        function createMessage(messageType, payload = {}) {
+            return {
+                header: {
+                    version: "1.0",
+                    type: messageType,
+                    tick: currentTick,
+                    timestamp: Date.now(),
+                    client_id: null  // Will be set by server
+                },
+                payload: payload
+            };
+        }
+
+        function sendMessage(messageType, payload = {}) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const message = createMessage(messageType, payload);
+                ws.send(JSON.stringify(message));
+                return true;
+            }
+            return false;
+        }
+
+        function sendPendingAction() {
+            if (waitingForActionRequest) {
+                if (currentMode === 'manual') {
+                    // Always send an action, even if no keys are pressed (default to no action)
+                    const action = pendingAction || { turn: 0, thrust: 0 };
+                    sendMessage("manual_action", action);
+                }
+                // Model clients don't send actions - server handles predictions
+                waitingForActionRequest = false;
+                pendingAction = null;
+            }
+        }
+
+        //---------------------------------- CLIENT SHIP VARIABLES FOR HTML DISPLAY ----------------------------------
+        let userModel = null;
+        let modelLoaded = false;
+        let modelStats = {
+            observationSpace: 7,
+            actionSpace: 1,
+            currentStep: 0,
+            shipState: { x: 0, y: 0, vx: 0, vy: 0 },
+            predictedAction: 0.0,
+            initialRadius: 0.0
+        };
+
+        let manualStats = {
+            currentStep: 0,
+            shipState: { x: 0, y: 0, vx: 0, vy: 0 },
+            initialRadius: 0.0
+        };
+
+        function showModelUpload() {
+            // First join model mode, then show upload
+            joinMode('model');
+        }
+
+        function cancelModelAction() {
+            if (modelLoaded) {
+                // Model is loaded and ship is active - cancel control
+
+                sendMessage("cancel_control");
+
+                // Reset to observe mode
+                currentMode = 'observe';
+                myShipId = null;
+                document.getElementById('mode').textContent = 'Observing';
+                document.getElementById('shipId').textContent = '-';
+
+                // Show join panel and hide model upload
+                document.getElementById('modelUpload').style.display = 'none';
+                document.getElementById('joinPanel').style.display = 'block';
+
+                // Reset model stats
+                modelStats.currentStep = 0;
+                modelStats.shipState = { x: 0, y: 0, vx: 0, vy: 0 };
+                modelStats.predictedAction = 0.0;
+                modelStats.initialRadius = 0.0;
+
+                manualStats.currentStep = 0;
+                manualStats.shipState = { x: 0, y: 0, vx: 0, vy: 0 };
+                manualStats.initialRadius = 0.0;
+
+                // Reset model loaded state
+                modelLoaded = false;
+                userModel = null;
+            } else {
+                // Model not loaded yet - just hide upload panel
+                hideModelUpload();
+            }
+        }
+
+        function hideModelUpload() {
+            document.getElementById('modelUpload').style.display = 'none';
+            document.getElementById('joinPanel').style.display = 'block';
+            document.getElementById('uploadStatus').innerHTML = '';
+
+            if (!modelLoaded) {
+                modelLoaded = false;
+                userModel = null;
+            }
+        }
+
+        function updateManualStats() {
+            const initRadiusDiv = document.getElementById('manualInitRadius');
+            const stateDiv = document.getElementById('manualState');
+            const stepDiv = document.getElementById('manualStep');
+
+            if (initRadiusDiv && stateDiv && stepDiv) {
+                initRadiusDiv.textContent = manualStats.initialRadius.toFixed(2);
+                stateDiv.textContent = `(${manualStats.shipState.x.toFixed(2)}, ${manualStats.shipState.y.toFixed(2)}, ${manualStats.shipState.vx.toFixed(2)}, ${manualStats.shipState.vy.toFixed(2)})`;
+                stepDiv.textContent = manualStats.currentStep;
+            }
+        }
+
+        function updateModelStats() {
+            const initRadiusDiv = document.getElementById('modelInitRadius');
+            const stateDiv = document.getElementById('modelState');
+            const actionDiv = document.getElementById('modelAction');
+            const stepDiv = document.getElementById('modelStep');
+
+            if (initRadiusDiv && stateDiv && actionDiv && stepDiv) {
+                initRadiusDiv.textContent = modelStats.initialRadius.toFixed(2);
+                stateDiv.textContent = `(${modelStats.shipState.x.toFixed(2)}, ${modelStats.shipState.y.toFixed(2)}, ${modelStats.shipState.vx.toFixed(2)}, ${modelStats.shipState.vy.toFixed(2)})`;
+                actionDiv.textContent = typeof modelStats.predictedAction === 'number' ?
+                    modelStats.predictedAction.toFixed(3) : modelStats.predictedAction;
+                stepDiv.textContent = modelStats.currentStep;
+            }
+        }
+
+
+        function cancelManualControl() {
+            sendMessage("cancel_control");
+
+            // Reset to observe mode
+            currentMode = 'observe';
+            myShipId = null;
+            document.getElementById('mode').textContent = 'Observing';
+            document.getElementById('shipId').textContent = '-';
+
+            // Show join panel
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('joinPanel').style.display = 'block';
+        }
+
+        function showDeathPopup(shipState, stepCount) {
+            const popup = document.getElementById('deathPopup');
+            const distance = Math.sqrt(shipState.x ** 2 + shipState.y ** 2);
+
+            document.getElementById('deathTime').textContent = `${stepCount} steps`;
+            document.getElementById('deathPosition').textContent = `(${shipState.x.toFixed(2)}, ${shipState.y.toFixed(2)})`;
+            document.getElementById('deathVelocity').textContent = `(${shipState.vx.toFixed(2)}, ${shipState.vy.toFixed(2)})`;
+            document.getElementById('deathDistance').textContent = distance.toFixed(2);
+
+            popup.style.display = 'block';
+        }
+
+        function closeDeathPopup() {
+            document.getElementById('deathPopup').style.display = 'none';
+
+            // Send a message to remove the ship from the server
+            sendMessage("cancel_control");
+
+            // Reset to observe mode
+            currentMode = 'observe';
+            myShipId = null;
+            document.getElementById('mode').textContent = 'Observing';
+            document.getElementById('shipId').textContent = '-';
+
+            // Show join panel
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('modelUpload').style.display = 'none';
+            document.getElementById('joinPanel').style.display = 'block';
+
+            // Reset stats
+            if (currentMode === 'model') {
+                modelStats.currentStep = 0;
+                modelStats.shipState = { x: 0, y: 0, vx: 0, vy: 0 };
+                modelStats.predictedAction = 0.0;
+                modelStats.initialRadius = 0.0;
+                modelLoaded = false;
+                userModel = null;
+            } else {
+                manualStats.currentStep = 0;
+                manualStats.shipState = { x: 0, y: 0, vx: 0, vy: 0 };
+                manualStats.initialRadius = 0.0;
+            }
+        }
+
+        async function handleModelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = 'Uploading model to server...';
+            statusDiv.className = 'uploadStatus';
+
+            try {
+                // Read the zip file as base64 using FileReader (more efficient for large files)
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        // Remove the data:application/zip;base64, prefix
+                        const base64 = reader.result.split(',')[1];
+                        resolve(base64);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                // Send model to server
+                if (sendMessage("model_upload", { model_data: base64Data, filename: file.name })) {
+                    statusDiv.innerHTML = 'Model uploaded successfully!';
+                    statusDiv.className = 'uploadStatus uploadSuccess';
+                    modelLoaded = true;
+                } else {
+                    throw new Error('Failed to send model to server');
+                }
+
+            } catch (error) {
+                console.error('Model upload error:', error);
+                statusDiv.innerHTML = `Upload Error: ${error.message}`;
+                statusDiv.className = 'uploadStatus uploadError';
+            }
+        }
+
+        //---------------------------------- MODEL UPLOAD HANDLING ----------------------------------
 
         function createShip(shipId, isYourShip = false) {
-            const geometry = new THREE.SphereGeometry(0.15, 8, 8); // Reduced segments for performance
-            const material = new THREE.MeshBasicMaterial({
-                color: shipColors[shipColorIndex % shipColors.length] // Solid color
-            });
+            let geometry, material;
+
+            // Check if this is the baseline ship (server-controlled AI ship)
+            if (shipId === 'baseline_ship') {
+                // Baseline ship: use circle geometry
+                geometry = new THREE.SphereGeometry(0.15, 16, 16);
+                material = new THREE.MeshBasicMaterial({
+                    color: 0xffd700 // Gold color for baseline ship
+                });
+            } else {
+                // Client ships: use triangle geometry
+                geometry = new THREE.ConeGeometry(0.15, 0.3, 3); // Triangle cone: radius, height, segments
+                material = new THREE.MeshBasicMaterial({
+                    color: shipColors[shipColorIndex % shipColors.length]
+                });
+            }
+
             const ship = new THREE.Mesh(geometry, material);
 
-            // Add ship trail with persistent styling - make it independent of ship position
+            // Rotate the cone so it points in positive Y direction initially (only for triangles)
+            if (shipId !== 'baseline_ship') {
+                ship.rotation.z = 0; // Point along positive Y-axis (upward)
+            }
+
+            // Add ship trail
             const trailGeometry = new THREE.BufferGeometry();
             const trailMaterial = new THREE.LineBasicMaterial({
-                color: shipColors[shipColorIndex % shipColors.length],
+                color: shipId === 'baseline_ship' ? 0xffd700 : shipColors[shipColorIndex % shipColors.length],
                 transparent: true,
-                opacity: 0.6 // Increased opacity for better visibility
+                opacity: 0.6
             });
             const trail = new THREE.Line(trailGeometry, trailMaterial);
-            // Don't add trail as child of ship - add it directly to scene
             scene.add(trail);
             ship.trail = trail;
             ship.trailPoints = [];
 
             scene.add(ship);
             ships[shipId] = ship;
-            shipColorIndex++;
+
+            // Only increment color index for client ships
+            if (shipId !== 'baseline_ship') {
+                shipColorIndex++;
+            }
 
             return ship;
         }
 
         function removeShip(shipId) {
             if (ships[shipId]) {
-                // Remove the trail from scene
                 if (ships[shipId].trail) {
                     scene.remove(ships[shipId].trail);
                 }
-                // Remove the ship from scene
                 scene.remove(ships[shipId]);
                 delete ships[shipId];
+            }
+        }
+
+        // Add baseline action tracking
+        let baselineAction = 0.0;
+        let baselineStep = 0;
+        let baselineInitRadius = 0.0;
+        let baselineVelocity = { vx: 0.0, vy: 0.0 };
+
+        function updateBaselineAction(action, step, initRadius) {
+            baselineAction = action;
+            baselineStep = step;
+            baselineInitRadius = initRadius;
+
+            const actionDiv = document.getElementById('baselineActionValue');
+            const stepDiv = document.getElementById('baselineStep');
+            const initRadiusDiv = document.getElementById('baselineInitRadius');
+
+            if (actionDiv && stepDiv && initRadiusDiv) {
+                actionDiv.textContent = action.toFixed(3);
+                stepDiv.textContent = step;
+                initRadiusDiv.textContent = initRadius.toFixed(2);
+            }
+        }
+
+        function updateBaselineVelocity(vx, vy) {
+            baselineVelocity = { vx: vx, vy: vy };
+
+            const velocityDiv = document.getElementById('baselineVelocity');
+            if (velocityDiv) {
+                velocityDiv.textContent = `(${vx.toFixed(3)}, ${vy.toFixed(3)})`;
+            }
+        }
+
+        function updateBaselineDistance(x, y) {
+            const distance = Math.sqrt(x * x + y * y);
+
+            const distanceDiv = document.getElementById('baselineDistance');
+            if (distanceDiv) {
+                distanceDiv.textContent = distance.toFixed(3);
             }
         }
 
@@ -151,11 +958,86 @@
         let ws;
         let myShipId = null;
         let connected = false;
+        let currentMode = 'observe';
         let lastUpdateTime = 0;
-        const updateThrottle = 16; // Throttle to ~60Hz (16ms)
+        const updateThrottle = 16;
 
+        function joinMode(mode) {
+            if (sendMessage("join_mode", { mode: mode })) {
+                currentMode = mode;
+                document.getElementById('mode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+
+                if (mode === 'manual') {
+                    document.getElementById('joinPanel').style.display = 'none';
+                    document.getElementById('controls').style.display = 'block';
+                    document.getElementById('modelUpload').style.display = 'none';
+
+                    // Initialize with no action
+                    pendingAction = { turn: 0, thrust: 0 };
+
+                    // Reset manual stats
+                    manualStats.currentStep = 0;
+                    manualStats.shipState = { x: 0, y: 0, vx: 0, vy: 0 };
+                    manualStats.initialRadius = 0.0;
+                    updateManualStats();
+                } else if (mode === 'model') {
+                    document.getElementById('joinPanel').style.display = 'none';
+                    document.getElementById('controls').style.display = 'none';
+                    // Keep modelUpload visible for stats
+                    document.getElementById('modelUpload').style.display = 'block';
+
+                    // Reset model stats
+                    modelStats.currentStep = 0;
+                    modelStats.shipState = { x: 0, y: 0, vx: 0, vy: 0 };
+                    modelStats.predictedAction = 0.0;
+                    modelStats.initialRadius = 0.0;
+                    updateModelStats();
+                }
+            }
+        }
+
+        function updateLeaderboard(leaderboardData) {
+            const entriesDiv = document.getElementById('leaderboardEntries');
+            if (!entriesDiv) return;
+
+            // Get all existing entry divs
+            const entryDivs = entriesDiv.querySelectorAll('.leaderboardEntry');
+
+            // Update each of the 10 slots
+            for (let i = 0; i < 10; i++) {
+                const entryDiv = entryDivs[i];
+                if (!entryDiv) continue;
+
+                if (i < leaderboardData.length) {
+                    // Fill with actual data
+                    const entry = leaderboardData[i];
+                    const shipId = entry[0];
+                    const shipData = entry[1];
+                    const name = shipData.name;
+                    const steps = shipData.steps;
+                    const isAlive = shipData.alive;
+
+                    entryDiv.className = `leaderboardEntry ${!isAlive ? 'leaderboardDead' : ''}`;
+                    entryDiv.innerHTML = `
+                        <span class="leaderboardRank">${i + 1}.</span>
+                        <span class="leaderboardName">${name}</span>
+                        <span class="leaderboardSteps">${steps}</span>
+                    `;
+                } else {
+                    // Keep empty slot
+                    entryDiv.className = 'leaderboardEntry';
+                    entryDiv.innerHTML = `
+                        <span class="leaderboardRank">${i + 1}.</span>
+                        <span class="leaderboardName">-</span>
+                        <span class="leaderboardSteps">-</span>
+                    `;
+                }
+            }
+        }
+
+        // ---------------------------------- ENTRYPOINT FOR WEBSOCKET CONNECTION ----------------------------------
         function connect() {
-            ws = new WebSocket('ws://localhost:8000/ws');
+            ws = new WebSocket('ws://localhost:5501/ws');
 
             ws.onopen = function () {
                 connected = true;
@@ -164,18 +1046,158 @@
             };
 
             ws.onmessage = function (event) {
-                const data = JSON.parse(event.data);
+                const rawData = JSON.parse(event.data);
 
-                if (data.type === 'ship_assigned') {
-                    myShipId = data.ship_id;
-                    document.getElementById('shipId').textContent = myShipId.substring(0, 8);
+                // Parse standardized message format
+                let data, messageType, messageTick;
+                if (rawData.header && rawData.payload) {
+                    // New standardized format
+                    data = rawData.payload;
+                    messageType = rawData.header.type;
+                    messageTick = rawData.header.tick;
+
+                    // Update our tick tracking
+                    if (messageTick > lastReceivedTick) {
+                        currentTick = messageTick;
+                        lastReceivedTick = messageTick;
+                    }
+                } else {
+                    // Fallback for old format (backward compatibility)
+                    data = rawData;
+                    messageType = rawData.type;
+                    messageTick = 0;
                 }
-                else if (data.type === 'state_update') {
-                    // Throttle updates to prevent overwhelming the frontend
+
+                if (messageType === 'mode_confirmed') {
+                    // Only set ship ID if one was provided (manual mode gets one immediately, model mode waits)
+                    if (data.ship_id) {
+                        myShipId = data.ship_id;
+                        document.getElementById('shipId').textContent = myShipId.substring(0, 8);
+                        document.getElementById('status').textContent = 'Active';
+                    } else {
+                        // Model mode - no ship yet
+                        myShipId = null;
+                        document.getElementById('shipId').textContent = 'Pending';
+                        document.getElementById('status').textContent = 'Awaiting Model';
+                    }
+
+                    // If server is requesting model upload, show upload panel
+                    if (data.awaiting_model) {
+                        document.getElementById('joinPanel').style.display = 'none';
+                        document.getElementById('modelUpload').style.display = 'block';
+                        document.getElementById('controls').style.display = 'none';
+                    }
+                }
+                else if (messageType === 'action_request') {
+                    // Server is requesting our action for this tick
+                    waitingForActionRequest = true;
+                    sendPendingAction();
+                }
+                else if (messageType === 'model_upload_response') {
+                    // Handle model upload response from server
+                    const statusDiv = document.getElementById('uploadStatus');
+                    const statsDiv = document.getElementById('modelStats');
+                    if (data.success) {
+                        statusDiv.innerHTML = data.message;
+                        statusDiv.className = 'uploadStatus uploadSuccess';
+                        modelLoaded = true;
+
+                        // Set ship ID now that model was uploaded successfully
+                        if (data.ship_id) {
+                            myShipId = data.ship_id;
+                            document.getElementById('shipId').textContent = myShipId.substring(0, 8);
+                            document.getElementById('status').textContent = 'Active';
+                        }
+
+                        // Show the model stats div
+                        statsDiv.style.display = 'block';
+
+                        // Initialize model stats
+                        modelStats.currentStep = 0;
+                        modelStats.shipState = { x: 0, y: 0, vx: 0, vy: 0 };
+                        modelStats.predictedAction = 0.0;
+                        modelStats.initialRadius = 0.0;
+                        updateModelStats();
+                    } else {
+                        statusDiv.innerHTML = data.message;
+                        statusDiv.className = 'uploadStatus uploadError';
+                        modelLoaded = false;
+                        statsDiv.style.display = 'none';
+                    }
+                }
+                else if (messageType === 'state_update') {
                     const currentTime = Date.now();
                     if (currentTime - lastUpdateTime >= updateThrottle) {
-                        updateShips(data.ships, data.your_ship_id);
+                        updateShips(data.ships, data.your_ship_id, data.trail_history);
                         lastUpdateTime = currentTime;
+
+                        // Update leaderboard
+                        if (data.leaderboard) {
+                            updateLeaderboard(data.leaderboard);
+                        }
+
+                        // Update baseline action
+                        if (data.baseline_action !== undefined) {
+                            const initRadius = data.baseline_init_r !== undefined ? data.baseline_init_r : 1.5;
+                            updateBaselineAction(data.baseline_action, baselineStep + 1, initRadius);
+                        }
+
+                        // Check if our ship is done (died)
+                        if (myShipId && data.ships[myShipId] && data.ships[myShipId].done) {
+                            showDeathPopup(data.ships[myShipId], currentMode === 'model' ? modelStats.currentStep : manualStats.currentStep);
+                            return;
+                        }
+
+                        // Update stats based on mode
+                        if (currentMode === 'manual' && myShipId && data.ships[myShipId]) {
+                            manualStats.currentStep++;
+                            const shipState = data.ships[myShipId];
+
+                            // Update ship state
+                            manualStats.shipState = {
+                                x: shipState.x,
+                                y: shipState.y,
+                                vx: shipState.vx,
+                                vy: shipState.vy
+                            };
+
+                            // Set initial radius if not set yet
+                            if (manualStats.initialRadius === 0.0 && shipState.init_r) {
+                                manualStats.initialRadius = shipState.init_r;
+                            }
+
+                            updateManualStats();
+                        }
+                        else if (currentMode === 'model' && modelLoaded) {
+                            modelStats.currentStep++;
+
+                            // Update ship state in stats (server handles all predictions now)
+                            if (myShipId && data.ships[myShipId] && !data.ships[myShipId].done) {
+                                const shipState = data.ships[myShipId];
+
+                                // Update ship state in stats
+                                modelStats.shipState = {
+                                    x: shipState.x,
+                                    y: shipState.y,
+                                    vx: shipState.vx,
+                                    vy: shipState.vy
+                                };
+
+                                // Set initial radius if not set yet
+                                if (modelStats.initialRadius === 0.0 && shipState.init_r) {
+                                    modelStats.initialRadius = shipState.init_r;
+                                }
+
+                                // Update predicted action from server
+                                if (data.model_action !== undefined) {
+                                    modelStats.predictedAction = data.model_action;
+                                } else {
+                                    modelStats.predictedAction = "No Action";
+                                }
+                            }
+
+                            updateModelStats();
+                        }
                     }
                 }
             };
@@ -184,6 +1206,12 @@
                 connected = false;
                 document.getElementById('status').textContent = 'Disconnected';
                 document.getElementById('status').className = 'disconnected';
+                document.getElementById('joinPanel').style.display = 'block';
+                document.getElementById('controls').style.display = 'none';
+                // Don't hide modelUpload if model is loaded
+                if (!modelLoaded) {
+                    document.getElementById('modelUpload').style.display = 'none';
+                }
                 // Reconnect after 2 seconds
                 setTimeout(connect, 2000);
             };
@@ -195,68 +1223,151 @@
             };
         }
 
-        function updateShips(shipStates, yourShipId) {
-            // Update ship count
+        function updateShips(shipStates, yourShipId, trailHistory) {
             document.getElementById('shipCount').textContent = Object.keys(shipStates).length;
 
-            const currentTime = Date.now();
-            const shouldUpdateTrails = currentTime - lastTrailUpdate > trailUpdateInterval;
+            // Debug: log ship states
+            console.log('Ship states received:', shipStates);
+            console.log('Your ship ID:', yourShipId);
 
             // Update each ship
             for (const [shipId, state] of Object.entries(shipStates)) {
+                console.log('Processing ship:', shipId, 'State:', state);
+
                 if (!ships[shipId]) {
+                    console.log('Creating new ship:', shipId);
                     createShip(shipId, shipId === yourShipId);
                 }
 
                 const ship = ships[shipId];
-                ship.position.set(state.x * 2, state.y * 2, 0); // Scale up for visibility
+                ship.position.set(state.x * 2, state.y * 2, 0);
+                console.log('Ship position set to:', state.x * 2, state.y * 2);
 
-                // Update trail less frequently for better performance
-                if (shouldUpdateTrails) {
-                    ship.trailPoints.push(new THREE.Vector3(state.x * 2, state.y * 2, 0));
-                    // Remove trail length limit for persistent trails
-                    // if (ship.trailPoints.length > 50) {
-                    //     ship.trailPoints.shift();
-                    // }
-
-                    const trailGeometry = new THREE.BufferGeometry().setFromPoints(ship.trailPoints);
-                    ship.trail.geometry = trailGeometry;
+                // Update baseline ship velocity and distance display
+                if (shipId === 'baseline_ship') {
+                    updateBaselineVelocity(state.vx, state.vy);
+                    updateBaselineDistance(state.x, state.y);
                 }
 
-                // Highlight your ship - simplified for MeshBasicMaterial
-                if (shipId === yourShipId) {
-                    ship.material.color.setHex(0xffffff); // Make your ship white
-                    ship.scale.setScalar(1.3);
+                // Add current position to trail immediately
+                if (!ship.trailPoints) {
+                    ship.trailPoints = [];
+                }
+                ship.trailPoints.push(new THREE.Vector3(state.x * 2, state.y * 2, 0));
+
+                // Keep only last 1000 trail points to prevent memory issues
+                if (ship.trailPoints.length > 1000) {
+                    ship.trailPoints = ship.trailPoints.slice(-1000);
+                }
+
+                // Update trail geometry immediately
+                const trailGeometry = new THREE.BufferGeometry().setFromPoints(ship.trailPoints);
+                ship.trail.geometry = trailGeometry;
+
+                // Update ship rotation based on control type and ship type
+                if (shipId === 'baseline_ship') {
+                    // Baseline ship: point in direction based on velocity
+                    const vx = state.vx;
+                    const vy = state.vy;
+                    if (Math.abs(vx) > 0.01 || Math.abs(vy) > 0.01) {
+                        const angle = Math.atan2(vy, vx);
+                        ship.rotation.z = angle - Math.PI / 2;
+                        console.log('Baseline ship rotation from velocity:', angle - Math.PI / 2, 'Velocity:', vx, vy);
+                    }
+                } else if (state.heading !== undefined && state.thrust !== undefined) {
+                    // Manual ship: point in heading direction (where ship is facing)
+                    const heading = state.heading;
+                    ship.rotation.z = heading - Math.PI / 2; // Subtract 90 degrees to align with heading
+                    console.log('Manual ship rotation:', heading - Math.PI / 2);
                 } else {
-                    // Restore original color for other ships
-                    const originalColorIndex = Object.keys(ships).indexOf(shipId) % shipColors.length;
-                    ship.material.color.setHex(shipColors[originalColorIndex]);
+                    // AI client ship: point in direction based on velocity
+                    const vx = state.vx;
+                    const vy = state.vy;
+                    if (Math.abs(vx) > 0.01 || Math.abs(vy) > 0.01) {
+                        const angle = Math.atan2(vy, vx);
+                        ship.rotation.z = angle - Math.PI / 2;
+                        console.log('AI client ship rotation from velocity:', angle - Math.PI / 2, 'Velocity:', vx, vy);
+                    }
+                }
+
+                // Highlight your ship
+                if (shipId === yourShipId) {
+                    ship.material.color.setHex(0xffffff);
+                    ship.scale.setScalar(1.3);
+                } else if (shipId === 'baseline_ship') {
+                    // Keep baseline ship gold
+                    ship.material.color.setHex(0xffd700);
+                    ship.scale.setScalar(1.0);
+                } else {
+                    // Other client ships: teal
+                    ship.material.color.setHex(0x64ffda);
                     ship.scale.setScalar(1.0);
                 }
-            }
-
-            // Update trail timestamp
-            if (shouldUpdateTrails) {
-                lastTrailUpdate = currentTime;
             }
 
             // Remove ships that are no longer in the state
             for (const shipId of Object.keys(ships)) {
                 if (!shipStates[shipId]) {
+                    console.log('Removing ship:', shipId);
                     removeShip(shipId);
                 }
             }
         }
 
-        // Animation loop with frame rate control
+        // Manual control handling
+        let currentTurn = 0.0;
+        let currentThrust = 0.0;
+        const turnRate = 10.0; // radians per second
+        const thrustMagnitude = 10.0; // Increased thrust strength
+
+        document.addEventListener('keydown', function (event) {
+            if (currentMode === 'manual') {
+                event.preventDefault();
+
+                if (event.code === 'ArrowLeft') {
+                    currentTurn = -turnRate;
+                } else if (event.code === 'ArrowRight') {
+                    currentTurn = turnRate;
+                } else if (event.code === 'ArrowUp') {
+                    currentThrust = thrustMagnitude;
+                }
+
+                // Store action for when server requests it
+                pendingAction = {
+                    turn: currentTurn,
+                    thrust: currentThrust
+                };
+            }
+        });
+
+        document.addEventListener('keyup', function (event) {
+            if (currentMode === 'manual') {
+                event.preventDefault();
+
+                if (event.code === 'ArrowLeft' && currentTurn < 0) {
+                    currentTurn = 0.0;
+                } else if (event.code === 'ArrowRight' && currentTurn > 0) {
+                    currentTurn = 0.0;
+                } else if (event.code === 'ArrowUp') {
+                    currentThrust = 0.0;
+                }
+
+                // Store action for when server requests it
+                pendingAction = {
+                    turn: currentTurn,
+                    thrust: currentThrust
+                };
+            }
+        });
+
+        // Animation loop
         let lastTime = 0;
-        const targetFPS = 60; // Target 60 FPS for smooth animation
+        const targetFPS = 60;
         const frameInterval = 1000 / targetFPS;
 
         function animate(currentTime) {
             requestAnimationFrame(animate);
-            
-            // Control frame rate for consistent performance
+
             if (currentTime - lastTime < frameInterval) {
                 return;
             }
