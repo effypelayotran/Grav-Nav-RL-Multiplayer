@@ -7,7 +7,7 @@ Fork of https://github.com/BrownParticleAstro/Grav-Nav-RL.git but includes multi
 
 Simulate 2D orbital maneuvers using **Reinforcement Learning (PPO)**, featuring dynamic visualizations, and customizable training and testing setups.
 
-Test your PPO ship model in a multi-ship orbital simulations, to see if your ship is the last one standing.
+**Test your PPO ship model in a multi-ship orbital simulations**, to see if your ship _is the last one standing._
 
 ## 🎮 How To Run Multiplayer Game Locally
 
