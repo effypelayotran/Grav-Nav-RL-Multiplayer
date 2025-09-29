@@ -2,7 +2,7 @@
 Brown CPFU Vers. 8.28.25
 ## A Fork of https://github.com/BrownParticleAstro/Grav-Nav-RL.git but includes multiship orbital environment & multiplayer game using authoritative server-client setup.
 
-## 🎮 How To Run Multiplayer Game Locally
+## How To Run Multiplayer Game Locally
 
 ### Prerequisites
 - Python 3.8 or higher
