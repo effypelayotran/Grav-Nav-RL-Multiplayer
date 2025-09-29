@@ -1,4 +1,4 @@
-# Grav-Nav-RL-Server
+ƒ# Grav-Nav-RL-Server
 Brown CPFU Vers. 8.28.25
 
 Fork of https://github.com/BrownParticleAstro/Grav-Nav-RL.git but includes multiship orbital environment & multiplayer game using authoritative server-client setup.
@@ -86,10 +86,9 @@ Simulate 2D orbital maneuvers using **Reinforcement Learning (PPO)**, featuring 
    - Click "RL Model Control" to let the AI control your ship
 
 2. **Manual Controls (if selected):**
-   - **↑** Forward thrust
-   - **↓** Reverse thrust  
-   - **←** Left thrust
-   - **→** Right thrust
+   - **↑** Thrust
+   - **←** Steer Left 10 degrees
+   - **→** Steer Right 10 degrees
    - **Space** No thrust
 
 3. **Multiple players:**
